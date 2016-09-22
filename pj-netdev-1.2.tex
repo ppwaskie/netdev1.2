@@ -61,17 +61,45 @@ When an application architecture such as this needs to fit into an environment w
 \label{app-overview}
 \end{figure}
 
-\subsection{Approach 1: Fork}
+\subsection{Approach 1: Fork application per-network namespace}
+Each network namespace that is created within an application needs to have some mechanism to process traffic inbound and outbound to it. One approach is after creating the namespace and configuring it, fork() the application completely, and assign a fork()'d copy to each namespace configured.
+
+This approach has serious limitations. As seen in Figure \ref{namespace-fork}, the core logic of the application needs to have added inter-process communication (IPC) to manage the non-networking pieces of the internals. This adds massive complexity, and impacts the entire application, instead of just the underlying networking pieces. In addition, applications like this are typically complex systems, and require significant system resources such as CPU and RAM. Having multiple copies of the entire application running on a system is completely infeasible.
+
+\begin{figure}[h]
+\includegraphics[width=3.31in]{multiple-stacks-no-namespace.png}
+\caption{Multiple network namespaces with fork().}
+\label{namespace-fork}
+\end{figure}
 
 \subsection{Approach 2: Thread per-network namespace}
+A different approach post-namespace creation is to create a new thread (LWP) and assign it to the network namespace. This thread would then live in that network namespace context for its lifetime, and could process any inbound and outbound traffic to and from the namespace.
+
+As seen in Figure \ref{namespace-threads}, this approach does not affect the core logic of the application. It only requires a new thread per-network namespace, and only affects the underlying networking core of the application. However, this approach does not scale well with large numbers of network namespaces. In highly complex applications that are multi-threaded, creating dedicated worker threads for specific tasks is usually not desirable. In addition, a single thread per-network namespace severely limits the processing capabilities of that network interface, especially if the underlying hardware is multiqueue-capable.
+
+\begin{figure}[h]
+\includegraphics[width=3.31in]{multiple-stacks-namespaces-dedicated-threads.png}
+\caption{Multiple network namespaces with dedicated threads.}
+\label{namespace-threads}
+\end{figure}
 
 \subsection{Approach 3: Global file descriptor per-network namespace}
+A final approach post-namespace creation is to switch a thread into the namespace, create a socket and bind the desired listening port inside of the namespace to that socket. Because file descriptors are not specific to each network namespace, all threads of our application have access to these file descriptors. When data needs to be read or written to a socket in a specific namespace, the currently-running thread can switch into that namespace context, and then access the socket using the global file descriptor.
+
+As illustrated by Figure \ref{namespace-fds}, each network namespace stack opens port 3260 (iSCSI), and has a file descriptor that is unique to the system assigned to it. Then within the networking core of the application, the namespace that specific file descriptor belongs to is stored with the socket information, giving the core application logic the ability to switch in and out of each network namespace as needed. This does not require any additional threads or processing units, and can allow the core logic to be completely unaware of the underlying network segregation.
+
+\begin{figure}[h]
+\includegraphics[width=3.31in]{multiple-namespaces-with-fd.png}
+\caption{Multiple network namespaces with file descriptors.}
+\label{namespace-fds}
+\end{figure}
 
 \section{Network Namespace Management}
+Before diving into how to create and manage network namespaces inside of an existing application, one should understand how to interact with them at a basic level\cite{edge2014}.
 
 \subsection{Identifying Different Namespaces}
 
-\subsection{Returning to the Base}
+\subsection{Switching Threads Between Namespaces}
 
 \subsection{Efficient Namespace Switching}
 
@@ -101,6 +129,6 @@ We would also like to acknowledge the Netdev1.2 selection committee for inviting
 \bibliography{pj-netdev-1.2}
 
 \section{Author Biography}
-PJ Waskiewicz is a Principal Software Engineer at NetApp in the SolidFire division. Prior to SolidFire/NetApp, PJ worked for many years as a network kernel engineer and device driver developer in the Networking Division of Intel. There he maintained and helped create the igb, ixgbe, and i40e wired Ethernet network drivers, as well as the initial Tx multiqueue support in the network stack, and Data Center Bridging support in the Linux kernel. He also worked in Intel's Open Source Technology Center on the x86 kernel tree, enabling advanced features in the Broadwell and Skylake microarchitectures.
+PJ Waskiewicz is a Principal Software Engineer at NetApp in the SolidFire division. Prior to SolidFire/NetApp, PJ worked for many years as a network kernel engineer and device driver developer in the Networking Division of Intel. There he maintained and helped create the igb, ixgbe, and i40e wired Ethernet network drivers, the initial Tx multiqueue support in the Linux kernel network stack, and added Data Center Bridging support to the Linux kernel. He also worked in Intel's Open Source Technology Center on the x86 kernel tree, enabling advanced features in the Broadwell and Skylake microarchitectures.
 
 \end{document}
