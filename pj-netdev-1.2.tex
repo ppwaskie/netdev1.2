@@ -48,19 +48,38 @@ When an application has core logic that needs to span multiple, separate network
 \item Scalability issues encountered, how these were addressed, and proposals around scalability testing to prevent regressions
 \end{itemize}
 
-\section{The Need For Multiple Namespaces}
+\section{The Need For Multiple Network Namespaces}
+Typical network-based storage applications have various layers of the core logic separated from one another. For example, the volume database containing metadata mappings to underlying block or object data is completely separated from the networking core, since they share no common functionality. In Figure \ref{app-overview}, one can see an example of how different components are separated from one another. Core logic for volume tracking in one functional area, thread management in another area, the iSCSI or Fibre Channel protocol stack handled elsewhere, and ultimately the underlying networking being handled by the underlying OS.
+
+Consider a public or private cloud environment, where "legacy" datacenter models migrate pieces of their infrastructure into that cloud environment. A typical storage application as Figure \ref{app-overview} could have all storage volumes from that legacy datacenter migrated as one tenant. However, multiple tenants may have conflicting environment configurations, such as IP address range collisions, different routing hierarchies, or different VLAN segregation within their respective network domains. By creating a completely new network stack inside of a network namespace for each of these legacy environments, the containers can fully segregate the network environments from one another, and avoid any changes to the legacy datacenter configuration.
+
+When an application architecture such as this needs to fit into an environment where the networking is the component that needs to support multiple containers, one can observe that using Docker or LXC is not sufficient. They are not sufficient since those deal with containerizing an entire application, not pieces of an application. Let us consider some different approaches to try and solve this problem of supporting multiple network stacks within an application.
+
 \begin{figure}[h]
 \includegraphics[width=3.31in]{standard-app-overview.png}
 \caption{High-level architecture of application.}
+\label{app-overview}
 \end{figure}
 
-\subsection{Section Headings}
+\subsection{Approach 1: Fork}
 
-Print section headings centered, in 12-point bold type in the style shown in these instructions. Your body text should be 10 point, justified, single space. Do not number sections.
+\subsection{Approach 2: Thread per-network namespace}
 
-\subsubsection{Subsection Headings}
+\subsection{Approach 3: Global file descriptor per-network namespace}
 
-Print subsection headings left justified, in 11-point bold type and mixed case (nouns, pronouns, and verbs are capitalized). They should be flush left. Your text should be 10 point, justified, single space. Do not number subsections.
+\section{Network Namespace Management}
+
+\section{Network Namespace Scalability}
+
+\begin{figure}[h]
+\includegraphics[width=3.31in]{close-up-latency.png}
+\caption{Network namespace switching latency, close-up}
+\label{close-latency}
+\end{figure}
+
+\section{Proposed Improvements}
+
+\section{Conclusion}
 
 \section{Acknowledgments}
 We would like to acknowledge the engineers who contributed to this network namespace application design: Joe Roback, Carl Seelye, Tom Distler, Jared Cantwell, and Marshall McMullen.
@@ -71,6 +90,6 @@ We would also like to acknowledge the Netdev1.2 selection committee for inviting
 \bibliography{pj-netdev-1.2}
 
 \section{Author Biography}
-PJ Waskiewicz is a Principal Software Engineer at NetApp in the SolidFire division. Prior to SolidFire/NetApp, PJ worked for many years as a network kernel engineer and device driver developer in the Networking Division of Intel. There he maintained and helped create the igb, ixgbe, and i40e wired Ethernet network drivers. He also worked in Intel's Open Source Technology Center on the x86 kernel tree, enabling advanced features in the Broadwell and Skylake microarchitectures.
+PJ Waskiewicz is a Principal Software Engineer at NetApp in the SolidFire division. Prior to SolidFire/NetApp, PJ worked for many years as a network kernel engineer and device driver developer in the Networking Division of Intel. There he maintained and helped create the igb, ixgbe, and i40e wired Ethernet network drivers, as well as the initial Tx multiqueue support in the network stack, and Data Center Bridging support in the Linux kernel. He also worked in Intel's Open Source Technology Center on the x86 kernel tree, enabling advanced features in the Broadwell and Skylake microarchitectures.
 
 \end{document}
