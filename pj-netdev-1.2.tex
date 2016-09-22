@@ -38,24 +38,15 @@ Ultimately this paper will propose further improvements to the namespace framewo
 networking, kernel, containers, namespaces, scaling, cloud
 
 \section{Introduction}
+The ongoing evolution of the datacenter towards cloud-based infrastructure continues to present interesting challenges to existing applications. These existing solutions, e.g. storage appliances, work to serve multiple tenants within a computing domain. However, when the infrastructure around these solutions evolves into a cloud-based, partitioned environment, these solutions must also evolve.
 
-The ongoing evolution of the datacenter towards cloud-based infrastructure continues to present interesting challenges to existing applications needing to exist in the cloud. The popularity of virtualization and containers has accelerated 
-
-\subsection{Word Processing Software}
-
-As detailed below, ISEA has prepared and made available a Microsoft Word template and an Open Office template for use in formatting your paper. If you are using some other word processing software, please follow the format instructions given below and ensure that your final paper looks as much like this sample as possible.
-
-\subsection{Length of Papers}
-
-A variety of paper lengths will be accepted under different categories. Please note that submission lengths must be all inclusive (including references, biographies and acknowledgements).
+When an application has core logic that needs to span multiple, separate network environments, it must become container/network-namespace aware. The Linux kernel exposes an API to create and manage network namespaces within an application. This paper will focus on this API for the following:
 \begin{itemize}
-\item Long paper submissions can be up to 8 pages in the ISEA2015 template format.
-\item Art and Research short paper submissions can be up to 4 pages in the ISEA2015 template format.
-\item Extended abstract submissions can be up to 2 pages in the ISEA2015 template format.
-\item Round tables and square panel submissions can be up to 2 pages in the ISEA2015 template format.
-\item Institutional presentation submissions can be up to 2 pages in the ISEA2015 template format.
+\item How to create and manage the lifecycle of a network namespace within a complex application
+\item How to track and process multiple network connections across multiple network namespaces in an efficient and scalable manner
+\item What limitations exist in this API that makes lifecycle management a challenge, along with proposals on how to improve the API for better lifecycle management
+\item Scalability issues encountered, how these were addressed, and proposals around scalability testing to prevent regressions
 \end{itemize}
-
 \section{Style and Format}
 Templates that implement these instructions can be retrieved electronically at {\small \tt http://isea2015.org}
 
@@ -144,8 +135,9 @@ Parenthesis: When an entire sentence is enclosed in parentheses, the punctuation
 Indent long quotations and extracts by 10 points at left margins.
 
 \section{Acknowledgments}
-We would like to acknowledge the engineers who also contributed to this namespace-driven design: Joe Roback, Carl Seelye, Tom Distler, Jared Cantwell, and Marshall McMullen.
-The preparation of these instructions and the \LaTeX{} and Word files was facilitated by borrowing from similar documents used for ICCC proceedings.
+We would like to acknowledge the engineers who contributed to this namespace-driven design: Joe Roback, Carl Seelye, Tom Distler, Jared Cantwell, and Marshall McMullen.
+
+We would also like to acknowledge the Netdev1.2 selection committee for inviting us to submit and present this paper.
 
 \begin{figure*}
 \includegraphics[width=\textwidth]{two-column-figure.png}
@@ -155,13 +147,8 @@ The preparation of these instructions and the \LaTeX{} and Word files was facili
 \section{Bibliography}
 The title ``Bibliography'' should be 12 point, bold style, centered. Using 9 point, regular type, list your bibliography in alphabetical order by family name, after the references. The difference between a reference list and a bibliography is that in your references, you list all the sources you directly referred to in the body of your writing in numerical order, whereas a bibliography includes an alphabetical listing of all those authors and sources that you have consulted while writing your essay. Use the same format as for the references otherwise. Those using Latex will follow the usual cite command format \cite{boden92}.
 
-\section{Author(s) Biography(ies)}
-The title ``Author(s) Biography(ies)'' should be 12 point, bold style, centered. Using 9 point, regular type, biographies should be no longer than 150-word count.
-
-\section{Questions?}
-
-For technical questions about Microsoft Word formatting please seek online tutorials. For other questions about your manuscript please contact: {\tt ISEA2015-info@sfu.ca}
-
+\section{Author Biography}
+PJ Waskiewicz is a Principal Software Engineer at NetApp in the SolidFire division. Prior to SolidFire/NetApp, PJ worked for many years as a network kernel engineer and device driver developer in the Networking Division of Intel.  He also worked on the x86 kernel tree, enabling advanced features in the Broadwell and Skylake microarchitectures.
 
 \bibliographystyle{isea}
 \bibliography{isea}
