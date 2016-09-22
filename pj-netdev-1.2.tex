@@ -69,6 +69,12 @@ When an application architecture such as this needs to fit into an environment w
 
 \section{Network Namespace Management}
 
+\subsection{Identifying Different Namespaces}
+
+\subsection{Returning to the Base}
+
+\subsection{Efficient Namespace Switching}
+
 \section{Network Namespace Scalability}
 
 \begin{figure}[h]
@@ -79,7 +85,12 @@ When an application architecture such as this needs to fit into an environment w
 
 \section{Proposed Improvements}
 
+\subsection{More Uniqueness}
+
+\subsection{Performance Regression Testing}
+
 \section{Conclusion}
+The network namespace API in the Linux kernel provides a very powerful framework for applications to take advantage of. This allows large applications that need to span multiple network namespaces to not require complete architectural upheavals of core logic outside of the networking layers. Using some clever tricks and techniques, the namespace switching and lifecycle management can be very efficient. Moving forward, we believe there is still more that can be done to improve this API, and make it even more powerful as containers continue to grow in popularity and wide-spread deployment across the computing industry.
 
 \section{Acknowledgments}
 We would like to acknowledge the engineers who contributed to this network namespace application design: Joe Roback, Carl Seelye, Tom Distler, Jared Cantwell, and Marshall McMullen.
