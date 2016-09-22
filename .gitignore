@@ -1,0 +1,5 @@
+.*.swp
+.texpadtmp
+*.aux
+*.log
+*.pdf
