@@ -95,9 +95,16 @@ As illustrated by Figure \ref{namespace-fds}, each network namespace stack opens
 \end{figure}
 
 \section{Network Namespace Management}
-Before diving into how to create and manage network namespaces inside of an existing application, one should understand how to interact with them at a basic level\cite{edge2014}.
+Before diving into how to create and manage network namespaces inside of an existing application, one should understand how to interact with them at a basic level\cite{edge2014}. Once one is familiar with how to manage network namespaces from an administrative perspective, then diving into the programmatic side is the next logical step\cite{man2016}.
+
+The biggest challenge with integrating network namespaces into an existing application is to manage their lifecycle efficiently. Things such as distinguishing newly-created network namespaces from recently destroyed network namespaces, how to switch into a namespace, and how to switch to the default/base namespace, are all things that need to be managed.
 
 \subsection{Identifying Different Namespaces}
+One challenge with network namespace management is how to distinguish a network namespace beyond just its name. Each network namespace is accessed by a file descriptor returned by opening /run/netns/\textit{namespace name} or by opening /proc/\textit{pid}/ns/net, where \textit{pid} is a process that currently lives inside that network namespace. In order for a complex application to have a chance at distinguishing between namespaces, one reference to each network namespace must be maintained for the life of that namespace; i.e. one file descriptor for each namespace must be maintained for all threads.
+
+However, this isn't sufficient to uniquely identify one network namespace from another. If one network namespace is destroyed and another quickly created, the file descriptor returned from open(/run/netns/\textit{new namespace}); may be the same that was used to track the previously destroyed namespace. This can cause very unexpected results if the networking core of our application is only using file descriptors to track the namespaces.
+
+If one adds one more piece of identification, then a "fairly" safe match can be made when comparing network namespaces. By adding the mtime of the kernel handle that /run/netns/\textit{namespace name} is backed by, this provides enough granularity that very quick destruction and addition of namespaces can be distinguished from one another. The mtime in this case is the same as when the special file was created, and is not updated by the kernel if changes are made to the namespace. This makes it a great candidate to help with unique indentification of each namespace along with its single file descriptor reference.
 
 \subsection{Switching Threads Between Namespaces}
 

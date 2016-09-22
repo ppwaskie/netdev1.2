@@ -6,16 +6,16 @@ Jake Edge
 \newblock {\em Namespaces in operation, part 7: Network namespaces}.
 \newblock https://lwn.net/Articles/580893/
 
-\bibitem[\protect\citeauthoryear{Biederman}{2014}]{biederman2014}
-Eric Biederman
-\newblock 2014.
-\newblock {\em namespaces: Use task\_lock and not rcu to protect nsproxy}.
-\newblock https://lists.linuxfoundation.org/pipermail/containers/2014-July/034787.html
-
 \bibitem[\protect\citeauthoryear{manpage}{2016}]{man2016}
 Linux man-pages project
 \newblock 2016.
 \newblock {\em setns(2) manpage, Linux Programmer's Manual}.
 \newblock http://man7.org/linux/man-pages/man2/setns.2.html
+
+\bibitem[\protect\citeauthoryear{Biederman}{2014}]{biederman2014}
+Eric Biederman
+\newblock 2014.
+\newblock {\em namespaces: Use task\_lock and not rcu to protect nsproxy}.
+\newblock https://lists.linuxfoundation.org/pipermail/containers/2014-July/034787.html
 
 \end{thebibliography}
