@@ -136,7 +136,7 @@ Making good decisions on when to switch a thread between namespaces is only part
 \label{close-latency}
 \end{figure}
 
-In Figure \ref{close-latency}, the namespace switching took 5 $\mu$secs with 1 network namespace, before and after the patch. However, approaching 64 network namespaces, pre-patch took an average of 150 $\mu$secs per switch, where post-patch it remained around 5 $\mu$secs. Expanding this out to 512 network namespaces, Figure \ref{full-latency} shows that the latency at 512 namespaces pre-patch took over half a second per switch, versus post-patch, the latency remains around 5 $\mu$secs.
+In Figure \ref{close-latency}, the namespace switching took 5 $\mu$secs with 1 network namespace, before and after the patch. However, approaching 64 network namespaces, pre-patch took an average of 150 $\mu$secs per switch, where post-patch it remained around 5 $\mu$secs. Expanding this out to 512 network namespaces, Figure \ref{full-latency} shows that the switching latency at 512 namespaces pre-patch took over half a second per switch, versus post-patch, the switching latency remains around 5 $\mu$secs.
 
 \begin{figure}[h]
 \includegraphics[width=3.31in]{full-namespace-latency.png}
