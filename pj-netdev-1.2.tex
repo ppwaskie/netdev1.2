@@ -96,26 +96,26 @@ As illustrated by Figure \ref{namespace-fds}, each network namespace stack opens
 \end{figure}
 
 \section{Network Namespace Management}
-Before diving into how to create and manage network namespaces inside of an existing application, one should understand how to interact with them at a basic level\cite{edge2014}. Once one is familiar with how to manage network namespaces from an administrative perspective, then diving into the programmatic side is the next logical step\cite{man2016}.
+It is critical for one to understand how to create and manage network namespaces at a basic level\cite{edge2014} prior to incorporating them into an application. Once one is familiar with how to manage network namespaces from an administrative perspective, then diving into the programmatic side is the next logical step\cite{man2016}.
 
-The biggest challenge with integrating network namespaces into an existing application is to manage their lifecycle efficiently. Things such as distinguishing newly-created network namespaces from recently destroyed network namespaces, how to switch into a namespace, and how to switch to the default/base namespace, are all things that need to be managed.
+The biggest challenge with integrating network namespaces into an existing application is to manage their lifecycle efficiently. Distinguishing newly-created network namespaces from recently destroyed network namespaces, how to switch into a namespace, and how to switch to the default/base namespace, are all things that need to be managed.
 
 \subsection{Identifying Different Namespaces}
 One challenge with network namespace management is how to distinguish a network namespace beyond just its name. Each network namespace is accessed by a file descriptor returned by opening /run/netns/\textit{namespace name} or by opening /proc/\textit{pid}/ns/net, where \textit{pid} is a process that currently lives inside that network namespace. In order for a complex application to have a chance at distinguishing between namespaces, one reference to each network namespace must be maintained for the life of that namespace; i.e. one file descriptor for each namespace must be maintained for all threads.
 
-However, this isn't sufficient to uniquely identify one network namespace from another. If one network namespace is destroyed and another quickly created, the file descriptor returned from open(/run/netns/\textit{new namespace}); may be the same that was used to track the previously destroyed namespace. This can cause very unexpected results if the networking core of our application is only using file descriptors to track the namespaces.
+However, this is not sufficient to uniquely identify one network namespace from another. If one network namespace is destroyed and another quickly created, the file descriptor returned from open(/run/netns/\textit{new namespace}); may be the same that was used to track the previously destroyed namespace. This can cause very unexpected results if the networking core of the application is only using file descriptors to track the namespaces.
 
-If one adds one more piece of identification, then a "fairly" safe match can be made when comparing network namespaces. By adding the mtime of the kernel handle that /run/netns/\textit{namespace name} is backed by, this provides enough granularity that very quick destruction and addition of namespaces can be distinguished from one another. The mtime in this case is the same as when the special file was created, and is not updated by the kernel if changes are made to the namespace. This makes it a great candidate to help with mostly unique indentification of each namespace along with its single file descriptor reference.
+If one adds one more piece of identification, then a "fairly" safe match can be made when comparing network namespaces. By adding the mtime of the kernel handle that /run/netns/\textit{namespace name} is backed by from stat(), this can provide sufficient granularity that very quick destruction and addition of namespaces can be distinguished from one another. The mtime in this case is the same as when the special file was created, and is not updated by the kernel if changes are made to the namespace. This makes it a great candidate to help with mostly unique indentification of each namespace along with its single file descriptor reference.
 
 \subsection{Switching Threads Between Namespaces}
-When using the approach in Figure \ref{namespace-fds} to create and manage network namespaces, it's very simple to switch into the namespace. A simple call to open() to get the file descriptor of the namespace is needed, then a call to setns() to switch. See Figure \ref{switch-new-namespace}. This will switch the current thread into the new namespace context, but it will also leave the thread in that context.
+When using the approach in Figure \ref{namespace-fds} to create and manage network namespaces, it is very simple to switch into the namespace. A simple call to open() to get the file descriptor of the namespace is needed, then a call to setns() to switch. See Figure \ref{switch-new-namespace}. This will switch the current thread into the new namespace context, but it will also leave the thread in that context.
 \begin{figure}[h]
 \includegraphics[width=3.31in]{switch-new-namespace.png}
 \caption{Basic switching to new network namespace}
 \label{switch-new-namespace}
 \end{figure}
 
-If the thread needs to be left in a known state, such as returning to the base or default namespace, then see Figure \ref{switch-base-namespace}. This assumes that PID 1 is in the default namespace of the kernel, or the default for the PID namespace if one is being used. If there's a different default/base namespace to return to, then one would cache a different PID's namespace file descriptor in the same fashion.
+If the thread needs to be left in a known state, such as returning to the base or default namespace, then see Figure \ref{switch-base-namespace}. This assumes that PID 1 is in the default namespace of the kernel, or the default for the PID namespace if one is being used. If there is a different default/base namespace to return to, then one would cache a different PID's namespace file descriptor in the same fashion.
 \begin{figure}[h]
 \includegraphics[width=3.31in]{switch-base-namespace.png}
 \caption{Basic switching to default network namespace}
@@ -153,7 +153,7 @@ The biggest functional challenge with using multiple network namespaces inside o
 \subsection{Performance Regression Testing}
 As can be seen in both Figures \ref{close-latency} and \ref{full-latency}, such a small change in the patchset \cite{biederman2014} can have a massive impact on scalability. This latency would also not be observed in more traditional container frameworks, since an application is started, moved into its namespace, and lives in that context for the duration of its lifetime. The kernel may observe internal latencies when scheduling that process, but the application would see no latency impact.
 
-Improvements can be made in the kernel build framework to include latency regression tests, much like the RCU torture tests. While this wouldn't necessarily be executed inline as part of a kernel build, it would include necessary framework to provide unit tests to detect if something regressed if someone decided to run the tests.
+Improvements can be made in the kernel build framework to include latency regression tests, much like the RCU torture tests. While this would not necessarily be executed inline as part of a kernel build, it would include necessary framework to provide unit tests to detect if something regressed when someone decided to run the tests.
 
 \section{Conclusion}
 The network namespace API in the Linux kernel provides a very powerful framework for applications to take advantage of. This allows large applications that need to span multiple network namespaces to not require complete architectural upheavals of core logic outside of the networking layers. Using some clever tricks and techniques, the namespace switching and lifecycle management can be very efficient. Moving forward, we believe there is still more that can be done to improve this API, and make it even more powerful as containers continue to grow in popularity and wide-spread deployment across the computing industry.
