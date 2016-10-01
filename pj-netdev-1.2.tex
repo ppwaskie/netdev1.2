@@ -100,6 +100,16 @@ It is critical for one to understand how to create and manage network namespaces
 
 The biggest challenge with integrating network namespaces into an existing application is managing their lifecycle efficiently. Distinguishing newly-created network namespaces from recently destroyed network namespaces, how to switch into a namespace, and how to switch to the default/base namespace, are all things that need to be managed.
 
+\subsection{Creating Network Namespaces}
+Network namespace creation can be accomplished by a few different methods:
+\begin{itemize}
+\item When starting a new process or thread using clone() with the CLONE\_NEWNET flag
+\item Issue an \textit{ip netns add} command\cite{edge2014} and create a new namespace that shows up in /run/netns
+\item Issue direct netlink commands to the kernel, similar to what \textit{ip netns add} will issue
+\end{itemize}
+
+Existing applications wanting to use the same pool of threads for all network processing will most likely not create a new namespace using the clone() method. Rather, creating the namespace via \textit{ip netns add} or issuing netlink calls directly is the best programmatic method. Once the namespace has been created using either of those two methods, it will be accessible from /run/netns/\textit{namespace name}.
+
 \subsection{Identifying Different Namespaces}
 One challenge with network namespace management is how to distinguish a network namespace beyond just its name. Each network namespace is accessed by a file descriptor returned by opening /run/netns/\textit{namespace name} or by opening /proc/\textit{pid}/ns/net, where \textit{pid} is a process that currently lives inside that network namespace. In order for a complex application to have a chance at distinguishing between namespaces, one reference to each network namespace must be maintained for the life of that namespace; i.e. one file descriptor for each namespace must be maintained for all threads.
 
